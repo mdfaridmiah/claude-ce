@@ -1,0 +1,5 @@
+*.swp
+.DS_Store
+*.tmp
+SPEC.md
+.claude/settings.local.json
