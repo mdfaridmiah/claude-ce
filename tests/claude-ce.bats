@@ -225,6 +225,23 @@ EOF
     [[ "$output" == *"already up to date"* ]]
 }
 
+@test "update refuses to overwrite a Homebrew-managed install" {
+    cellar="$BATS_TEST_TMPDIR/Cellar/claude-ce/1.0.0/bin"
+    mkdir -p "$cellar"
+    cp "$SCRIPT" "$cellar/claude-ce"
+
+    CLAUDE_CE_UPDATE_URL="file://$SCRIPT" run bash "$cellar/claude-ce" update -y
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"brew upgrade claude-ce"* ]]
+
+    # brew links its bin entry as a symlink into the Cellar, so the check has
+    # to survive symlink resolution too.
+    ln -s "$cellar/claude-ce" "$BATS_TEST_TMPDIR/linked-claude-ce"
+    CLAUDE_CE_UPDATE_URL="file://$SCRIPT" run bash "$BATS_TEST_TMPDIR/linked-claude-ce" update -y
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"brew upgrade claude-ce"* ]]
+}
+
 @test "update rejects a download that is not a script" {
     copy="$BATS_TEST_TMPDIR/claude-ce"
     cp "$SCRIPT" "$copy"

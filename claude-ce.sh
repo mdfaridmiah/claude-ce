@@ -9,7 +9,7 @@ BLOCK_HEADER_COMMENT="# Added by claude-ce (https://github.com/mdfaridmiah/claud
 
 FORCE=0
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 UPDATE_URL="${CLAUDE_CE_UPDATE_URL:-https://raw.githubusercontent.com/mdfaridmiah/claude-ce/main/claude-ce.sh}"
 
 # Files and folders that sync/clone share between accounts. Credentials
@@ -932,6 +932,14 @@ cmd_update() {
             self="$(dirname "$self")/$link"
         fi
     done
+
+    # Homebrew owns the files it installs. Writing here would succeed on a
+    # user-owned prefix, then be silently reverted by the next brew upgrade.
+    if [[ "$self" == */Cellar/claude-ce/* ]]; then
+        echo "Error: this claude-ce was installed with Homebrew." >&2
+        echo "Update it with: brew upgrade claude-ce" >&2
+        exit 2
+    fi
 
     if [[ ! -w "$self" || ! -w "$(dirname "$self")" ]]; then
         echo "Error: no write permission for $(display_path "$self")." >&2
